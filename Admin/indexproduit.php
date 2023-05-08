@@ -1,17 +1,67 @@
 <?php
 
-include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
-    //include '../config.php';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+require_once 'C:/xampp/htdocs/Cyjam/vendor/autoload.php';
+use Stichoza\GoogleTranslate\GoogleTranslate;
+require 'dbproduit.php';
+
+if (isset($_GET['q'])) {
+  $search_query = $_GET['q'];
+  $sql = "SELECT * FROM produit WHERE nom_produit LIKE :search_query";
+  $statement = $connection->prepare($sql);
+  $statement->bindValue(':search_query', "%$search_query%");
+} else {
+$sql = 'SELECT * FROM produit';
+$statement = $connection->prepare($sql);
+}
+$statement->execute();
+$people = $statement->fetchAll(PDO::FETCH_OBJ);
+
+
+$translator = new Stichoza\GoogleTranslate\GoogleTranslate();
+$translator->setSource('fr')->setTarget('en');
+foreach ($people as $person) {
+    $person->image_produit_en = $translator->translate($person->image_produit);}
+  
+
+    $sql = "SELECT COUNT(*) AS total_count FROM produit";
+$statement = $connection->prepare($sql);
+$statement->execute();
+$result = $statement->fetch(PDO::FETCH_ASSOC);
+$total_count = $result['total_count'];
+
+$sql = "SELECT COUNT(*) AS lecture_count FROM produit WHERE cateforie = 'lecture'";
+$statement = $connection->prepare($sql);
+$statement->execute();
+$result = $statement->fetch(PDO::FETCH_ASSOC);
+$lecture_count = $result['lecture_count'];
+$lecture_percentage = round(($lecture_count / $total_count) * 100, 2);
+
+$sql = "SELECT COUNT(*) AS peinture_count FROM produit WHERE cateforie = 'peinture'";
+$statement = $connection->prepare($sql);
+$statement->execute();
+$result = $statement->fetch(PDO::FETCH_ASSOC);
+$peinture_count = $result['peinture_count'];
+$peinture_percentage = round(($peinture_count / $total_count) * 100, 2);
+
+$sql = "SELECT COUNT(*) AS cinema_count FROM produit WHERE cateforie = 'cinema'";
+$statement = $connection->prepare($sql);
+$statement->execute();
+$result = $statement->fetch(PDO::FETCH_ASSOC);
+$cinema_count = $result['cinema_count'];
+$cinema_percentage = round(($cinema_count / $total_count) * 100, 2);
     
-	$blogC=new ReponseC();
-   
-    $listeBlogs=$blogC->affichercommentaire(); 
+
+
+
+
     
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
+    <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -19,8 +69,7 @@ include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
         <meta name="author" content="" />
         <title>Tables - SB Admin</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
-       
-        <link href="css/styles1.css" rel="stylesheet" />
+        <link href="styles.css" rel="stylesheet" />
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
     </head>
@@ -42,19 +91,16 @@ include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
                         <li><a class="dropdown-item" href="#!">Settings</a></li>
                         <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                         <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="Deconnexion.php">Logout</a></li>
+                        <li><a class="dropdown-item" href="#!">Logout</a></li>
                     </ul>
                 </li>
             </ul>
         </nav>
-        
-            <!-- sidebar -->
-            <div id="layoutSidenav">
-            <!-- sidebar -->
+        <div id="layoutSidenav">
             <div id="layoutSidenav_nav">
                 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                     <div class="sb-sidenav-menu">
-                        <div class="nav">
+                    <div class="nav">
                             <div class="sb-sidenav-menu-heading">Core</div>
                             <a class="nav-link" href="AfficherUsers.php">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
@@ -99,14 +145,6 @@ include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
 
                                 </nav>
                             </div>
-                            
-                
-                        </div>
-                    </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logged in as:</div>
-                        Start Bootstrap
-                    </div>
                 </nav>
             </div>
             <div id="layoutSidenav_content">
@@ -118,77 +156,56 @@ include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-table me-1"></i>
-                                Table Comments
+                                Table Product
                             </div>
                             <div class="card-body">
 
                                 
-        
-        
-      <br><br>
-      <table class="table bordered">
-                            <table  class="table table-bordered" id="Table" width="100%" cellspacing="0" style ="border-color:black;">
-                 <tr>
-                     <th style="color:red;border-color:black">ID</th>
-                     <th style="color: red;border-color:black">idBlog</th>
-                     <th style="color: red;border-color:black">Message</th>
-                     <th style="color: red;border-color:black">Date</th>
-                     <th colspan="2" style="color:red;border-color:black">Actions</th>
-
-                     <!--<td colspan="2" style="color: white; text-align: center;">Actions</td>-->
-                 </tr>
-                 <?php
-                 foreach($listeBlogs as $blog) {
-                    //boucle for w a7na fi kol blog 3ana titre w description w image w id 
-                     ?>
-                     <tr>
-               <td style="color:black;border-color:black"><?php echo $blog['id']; ?></td>
-				<td style="color:black;border-color:black"><?php echo $blog['titre']; ?></td>
-                <td style="color:black;border-color:black"><?php echo $blog['message']; ?></td>
-				<td style="color:black;border-color:black"><?php echo $blog['date']; ?></td>
-                
-					  		
-                <td>
-	
-				
-			
-                <form method="POST" action="supprimercom.php">
-						<input type="submit" id="supprimer" value="Supprimer" class="btn btn-primary" style="background-color:red;">
-						<input type="hidden" value=<?PHP echo $blog['id']; ?> name="id">
-					</form>
-					
-				</td>
-			      </tr>
-                <?php
-                 }
-                 ?>
-
-                </table>
-                <br>
-
-              
-        
-        
-
+        <form action="" method="get">
+        <div class="form-group">
+          <label for="search_query"></label>
+          <input type="text" class="form-control" id="search_query" placeholder="search for a product" name="q" value="<?= $_GET['q'] ?? '' ?>">
         </div>
-        <!-- Content End -->
-
-
-        <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <br>
+        <center><button type="submit" class="btn btn-primary">Search</button></center>
+      </form>
+      <br><br>
+      <table class="table table-bordered">
+        <tr>
+         
+          <th>nom_produit</th>
+          <th>prix_produit</th>
+          <th>date_d'insertion</th>
+          <th>image_produit </th>
+          <th>image_produit_en</th>
+          <th>categorie</th>
+          <th>Action</th>
+        </tr>
+        <?php foreach($people  as $person): ?>
+          <tr>
+           
+            <td><?= $person->nom_produit; ?></td>
+            <td><?= $person->prix_produit; ?></td>
+            <td><?= $person->date_dinsertion; ?></td>
+            <td><?= $person->image_produit; ?></td>
+            <td><?= $person->image_produit_en; ?></td>
+            <td><?= $person->cateforie; ?></td>
+            
+            <td>
+              <a href="editproduit.php?id=<?= $person->id ?>" class="btn btn-info">Edit</a>
+              <a onclick="return confirm('Are you sure you want to delete this entry?')" href="deleteproduit.php?id=<?= $person->id ?>" class='btn btn-danger'>Delete</a>
+            </td>
+          
+        <?php endforeach; ?>
+      </table>
+      <center><button type="button" class="btn btn-primary" style="background-color; black;" onclick="exportPDF()">Export PDF</button></center><br>
+     <center> <button type="button" class="btn btn-primary" style="background-color; black;"><a class="nav-link" href="createproduit.php" style="color: white;">Ajouter Produit</a></boutton></center>
     </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/chart/chart.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-    </div>
+   <center> <h2>Pie chart of categories<h2> </center>
+    <canvas id="pie-chart" style="margin-left: 350px;margin-right :300px" ></canvas>
+    
+      </div>
+                    </div>
                 </main>
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid px-4">
@@ -208,9 +225,39 @@ include 'C:/xampp/htdocs/Cyjam/Controller/CommentaireC.php';
         <script src="js/datatables-simple-demo.js"></script>
         <script src="https://unpkg.com/chart.js@3.7.0/dist/chart.min.js"></script>
         <script src="pdf.js"></script>
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
-    <script src="pdf.js"></script>
-</body>
 
+    <script>
+  var ctx = document.getElementById('pie-chart').getContext('2d');
+  var chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Lecture', 'Peinture', 'Cinema'],
+      datasets: [{
+        label: 'Category',
+        data: [<?= $lecture_percentage ?>, <?= $peinture_percentage ?>, <?= $cinema_percentage ?>],
+        backgroundColor: [
+          'green',
+          'red',
+          'purple'
+        ]
+      }]
+    },
+    options: {
+  title: {
+    display: true,
+    text: 'Category Distribution'
+  },
+  legend: {
+    display: true,
+    position: 'bottom'
+  },
+  fontSize: 16
+}
+  });  
+   </script>
+        
+
+ 
+  
+      </body>                   
 </html>

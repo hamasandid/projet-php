@@ -129,6 +129,14 @@ if (
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                                 Reservations
                             </a>
+                            <a class="nav-link" href="indexproduit.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                               Produits
+                            </a>
+                            <a class="nav-link" href="indexfacture.php">
+                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                Facture
+                            </a>
                             <div class="sb-sidenav-menu-heading">Interface</div>
                             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
                                 <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
